@@ -1,25 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect} from "react";
+import {connect} from "react-redux";
+import {fetchDataRequest, fetchDataSuccess, fetchDataFailure} from "./action";
+import {fetchData} from "./apiService";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function App({
+                 loading,
+                 data,
+                 error,
+                 fetchDataRequest,
+                 fetchDataSuccess,
+                 fetchDataFailure
+             }) {
+    useEffect(() => {
+        fetchDataRequest();
+        fetchData()
+            .then((data) => fetchDataSuccess(data))
+            .catch((error) => fetchDataFailure(error.message));
+
+    }, [fetchDataRequest, fetchDataSuccess, fetchDataFailure]);
+
+    return (
+        <div className="App">
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error}</p>}
+            {data && (
+                <div>
+                    <h1>Data:</h1>
+                    <pre>{JSON.stringify(data, null, 2)}</pre>
+                </div>
+            )}
+        </div>
+    );
 }
 
-export default App;
+const mapStateToProps = (state) => ({
+    loading: state.loading,
+    data: state.data,
+    error: state.error
+})
+
+export default connect(mapStateToProps,
+    {
+        fetchDataRequest,
+        fetchDataSuccess,
+        fetchDataFailure
+    })(App);
